@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Language Translator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             display: flex;
@@ -15,44 +17,53 @@
         }
         .container {
             background: #fff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 500px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
             text-align: center;
         }
         h1 {
             color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
         }
         form {
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         textarea, input[type="file"], input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 20px;
+            width: 100%;
+            padding: 12px;
             border-radius: 4px;
-            border: 1px solid #ccc;
-            resize: none;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            font-size: 1em;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px;
             background-color: #007bff;
             border: none;
             border-radius: 4px;
-            color: white;
+            color: #fff;
+            font-size: 1em;
             cursor: pointer;
-            font-size: 16px;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #0056b3;
         }
         .translated-text {
             margin-top: 20px;
-            background: #e9ecef;
-            padding: 10px;
+            padding: 15px;
             border-radius: 4px;
-            border: 1px solid #ccc;
+            background-color: #e9ecef;
+            border: 1px solid #ddd;
+        }
+        .translated-text p {
+            margin: 0;
         }
     </style>
 </head>
@@ -61,9 +72,9 @@
         <h1>Language Translator</h1>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <textarea name="text" placeholder="Enter text to translate"></textarea><br>
-            <input type="file" name="audio" accept="audio/*"><br>
-            <input type="text" name="target_language" placeholder="Target Language (e.g., en)"><br>
+            <textarea name="text" placeholder="Enter text to translate" rows="4"></textarea>
+            <input type="file" name="audio" accept="audio/*">
+            <input type="text" name="target_language" placeholder="Target Language (e.g., en)">
             <button type="submit">Translate</button>
         </form>
         {% if translated_text %}

@@ -3,13 +3,13 @@ from googletrans import Translator
 from gtts import gTTS
 from .forms import TranslationForm
 import speech_recognition as sr
-from pydub import AudioSegment
 import os
-import subprocess
 
 def translate_text(request):
     translator = Translator()
     translated_text = ""
+    audio_file_path = 'translated.mp3'  # This will be a relative path, use MEDIA_ROOT in production
+    
     if request.method == 'POST':
         form = TranslationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -20,32 +20,35 @@ def translate_text(request):
             # Handle audio input
             if audio:
                 recognizer = sr.Recognizer()
-                with sr.AudioFile(audio) as source:
-                    audio_data = recognizer.record(source)
-                    text = recognizer.recognize_google(audio_data)
+                try:
+                    with sr.AudioFile(audio) as source:
+                        audio_data = recognizer.record(source)
+                        text = recognizer.recognize_google(audio_data)
+                except sr.UnknownValueError:
+                    translated_text = "Google Speech Recognition could not understand the audio"
+                except sr.RequestError:
+                    translated_text = "Could not request results from Google Speech Recognition service"
 
             # Translate text
             if text:
-                translated = translator.translate(text, dest=target_language)
-                translated_text = translated.text
-                tts = gTTS(translated.text, lang=target_language)
-                tts.save('translated.mp3')
-
-                # Play the translated audio
-                if os.path.exists('translated.mp3'):
-                    try:
-                        if os.name == 'nt':  # Windows
-                            os.system('start translated.mp3')
-                        else:  # Other OS
-                            subprocess.call(['mpg123', 'translated.mp3'])
-                    except Exception as e:
-                        print(f"Error playing audio: {e}")
+                try:
+                    translated = translator.translate(text, dest=target_language)
+                    translated_text = translated.text
+                    tts = gTTS(translated_text, lang=target_language)
+                    tts.save(audio_file_path)
+                except Exception as e:
+                    translated_text = f"Error translating text: {e}"
 
     else:
         form = TranslationForm()
 
-    return render(request, 'translate/translate.html', {'form': form, 'translated_text': translated_text})
+    # Ensure file exists before rendering
+    audio_file_url = None
+    if os.path.exists(audio_file_path):
+        audio_file_url = os.path.join('media', audio_file_path)
 
-def detect_language(text):
-    translator = Translator()
-    return translator.detect(text).lang
+    return render(request, 'translate/translate.html', {
+        'form': form,
+        'translated_text': translated_text,
+        'audio_file_url': audio_file_url
+    })
